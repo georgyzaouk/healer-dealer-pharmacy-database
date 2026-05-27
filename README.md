@@ -45,4 +45,4 @@ The full project report is available in the `report/` folder.
 
 ## Notes
 
-This project was completed as part of a team database design assignment for CSC375: Database Management Systems, at the Lebanese American University in Beirut.
+This project was completed as part of a team database design assignment for Database Management Systems, at the Lebanese American University in Beirut.
