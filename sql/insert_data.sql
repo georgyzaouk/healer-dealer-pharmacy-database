@@ -1,3 +1,6 @@
+-- Inserting Values:
+
+-- 1. BRANCH:
 INSERT INTO BRANCH VALUES ('B001', 'Hamra HD Branch', '+96119876543', 
 'hamra@healerdealer.com', 'Hamra Street', 'Beirut', 'Rami Haddad', NULL);
 INSERT INTO BRANCH VALUES ('B002', 'Bliss HD Branch', '+96119987654', 
@@ -5,6 +8,7 @@ INSERT INTO BRANCH VALUES ('B002', 'Bliss HD Branch', '+96119987654',
 INSERT INTO BRANCH VALUES ('B003', 'Achrafieh HD Branch', '+96117123456', 
 'achrafieh@healerdealer.com', 'Achrafieh St', 'Beirut', 'Samir Khalil', NULL);
 
+-- 2. EMPLOYEE:
 INSERT INTO EMPLOYEE VALUES ('123456789', 'Rami', 'Haddad', TO_DATE('12/02/1985', 
 'DD/MM/YYYY'), 'M', 'Manager', NULL, 2000.00, '+96112345678', 'rami.haddad@healerdealer.com', 
 'Beirut', 1, 'Hamra St', 3, 'B001', TO_DATE('01/01/2022', 'DD/MM/YYYY'), NULL, 40);
@@ -38,6 +42,9 @@ INSERT INTO EMPLOYEE VALUES ('889900112', 'Zeinab', 'Fakhoury', TO_DATE('02/01/1
 'zeinab.fakhoury@healerdealer.com', 'Beirut', 30, 'Monot St', 10, 'B001', TO_DATE('09/08/2022', 
 'DD/MM/YYYY'), NULL, 45);
 
+-- To avoid the error with the referential integrity constraint caused by foreign key Manager_SSN having
+-- nothing to refer to, we inserted Manager_SSN as a NULL value.
+-- Then, we updated them to reference the primary key values of EMPLOYEE after inserting EMPLOYEE values:
 UPDATE BRANCH
 SET Manager_SSN = '123456789'
 WHERE BranchID = 'B001';
@@ -48,10 +55,12 @@ UPDATE BRANCH
 SET Manager_SSN = '778899001'
 WHERE BranchID = 'B003';
 
+-- 3. INVENTORY:
 INSERT INTO INVENTORY VALUES ('I001', 100, 'Hamra St', 'Beirut', 'B001');
 INSERT INTO INVENTORY VALUES ('I002', 200, 'Bliss St', 'Beirut', 'B002');
 INSERT INTO INVENTORY VALUES ('I003', 150, 'Achrafieh St', 'Beirut', 'B003');
 
+-- 4. SUPPLIER:
 INSERT INTO SUPPLIER VALUES ('30012345678', 'Beirut Pharma Solutions', 'Joseph Atallah', 
 'Monthly', 'contact@pharmaleb.com', '+96130123456', 'Jal el-Dib Street', 'Metn');
 INSERT INTO SUPPLIER VALUES ('30087654321', 'Cedars Medical Supply Co.', 'Samir Bassil', 
@@ -73,13 +82,20 @@ INSERT INTO SUPPLIER VALUES ('30077889900', 'Sahha Pharma Distributors', 'Zahra 
 INSERT INTO SUPPLIER VALUES ('30088990011', 'AlphaMed Lebanon', 'Jad Khoury', 'Monthly', 
 'contact@pharmamed.com', '+96138765012', 'Rue de Verdun', 'Beirut');
 
+-- 5. CUSTOMER:
+-- Since CUSTOMER and BILLING_INVOICE have foreign keys that refer to each other,
+-- there are a few extra steps we must follow, as with EMPLOYEE and BRANCH.
+-- We first get the constraint name that prevents primary key Bill_ID from being NULL,
+-- and drop it later to make Bill_ID nullable:
 SELECT constraint_name
 FROM user_constraints
 WHERE table_name = 'CUSTOMER';
 
+-- Drop primary key constraint to make Bill_ID nullable:
 ALTER TABLE CUSTOMER DROP CONSTRAINT SYS_C007488;
 ALTER TABLE CUSTOMER MODIFY Bill_ID INT NULL;
 
+-- Then insert CUSTOMER values with null Bill_ID:
 INSERT INTO CUSTOMER VALUES ('Sami', 'Haddad', NULL, '+96111111111', 
 TO_DATE('05/05/1995', 'DD/MM/YYYY'));
 INSERT INTO CUSTOMER VALUES ('Rita', 'Khalil', NULL, '+96122222222', TO_DATE('10/10/1985', 
@@ -101,6 +117,8 @@ INSERT INTO CUSTOMER VALUES ('Layla', 'Zein', NULL, '+96199999999', TO_DATE('13/
 INSERT INTO CUSTOMER VALUES ('Rami', 'Haddad', NULL, '+96110000000', 
 TO_DATE('17/11/1984', 'DD/MM/YYYY'));
 
+-- 6. BILLING_INVOICE:
+-- Then we insert BILLING_INVOICE values:
 INSERT INTO BILLING_INVOICE VALUES (1, '123456789', TO_DATE('02/11/2024', 
 'DD/MM/YYYY'), 15.00, 'paid', 'Sami', 'Haddad', 15.00);
 INSERT INTO BILLING_INVOICE VALUES (2, '987654321', TO_DATE('16/11/2024', 
@@ -122,6 +140,8 @@ INSERT INTO BILLING_INVOICE VALUES (9, '778899001', TO_DATE('30/11/2024',
 INSERT INTO BILLING_INVOICE VALUES (10, '889900112', TO_DATE('01/12/2024', 
 'DD/MM/YYYY'), 100.00, 'pending', 'Rami', 'Haddad', 50.00);
 
+-- Now that we added BILLING_INVOICE values, we have the primary key InvoiceID
+-- to refer to in the foreign key Bill_ID of CUSTOMER:
 UPDATE CUSTOMER
 SET Bill_ID = 1
 WHERE Fname = 'Sami' AND Lname ='Haddad';
@@ -153,9 +173,11 @@ UPDATE CUSTOMER
 SET Bill_ID = 10
 WHERE Fname = 'Rami' AND Lname = 'Haddad';
 
+-- Finally, we re-establish the constraints of CUSTOMER:
 ALTER TABLE CUSTOMER ADD CONSTRAINT PK_CUSTOMER PRIMARY KEY (Fname, Lname, 
 Bill_ID);
 
+-- 7. DEPENDENT:
 INSERT INTO DEPENDENT VALUES ('Lila', 'Haddad', '123456789', 'F', TO_DATE('10/10/2012', 
 'DD/MM/YYYY'), 'Child');
 INSERT INTO DEPENDENT VALUES ('Nadim', 'Haddad', '123456789', 'M', TO_DATE('15/05/2010', 
@@ -177,6 +199,7 @@ INSERT INTO DEPENDENT VALUES ('Zeinab', 'Fakhoury', '889900112', 'F', TO_DATE('2
 INSERT INTO DEPENDENT VALUES ('Rami', 'Haddad', '123456789', 'M', TO_DATE('02/05/2009', 
 'DD/MM/YYYY'), 'Spouse');
 
+-- 8. Payment_term:
 INSERT INTO Payment_term VALUES ('30012345678', 'Monthly');
 INSERT INTO Payment_term VALUES ('30087654321', 'Weekly');
 INSERT INTO Payment_term VALUES ('30011223344', 'Yearly');
@@ -188,6 +211,7 @@ INSERT INTO Payment_term VALUES ('30066778899', 'Weekly');
 INSERT INTO Payment_term VALUES ('30077889900', 'Monthly');
 INSERT INTO Payment_term VALUES ('30088990011', 'Yearly');
 
+-- 9. MEDICINE:
 INSERT INTO MEDICINE VALUES ('A01AA01', 'Paracetamol', 'Pain reliever', 'T', 5.00, 'PharmaLeb');
 INSERT INTO MEDICINE VALUES ('B02BC01', 'Ibuprofen', 'Anti-inflammatory', 'T', 10.00, 'Medico');
 INSERT INTO MEDICINE VALUES ('C03CC01', 'Aspirin', 'Blood thinner', 'T', 7.00, 'HealthPlus');
@@ -200,6 +224,12 @@ INSERT INTO MEDICINE VALUES ('I09II01', 'Amoxicillin', 'Antibiotic', 'T', 9.00, 
 INSERT INTO MEDICINE VALUES ('J10JJ01', 'Omeprazole', 'Acid reducer', 'T', 10.50, 'PharmaLeb');
 INSERT INTO MEDICINE VALUES('N/A', 'N/A', 'N/A', 'F', 0, 'N/A');
 
+-- We inserted a 'N/A' tuple that represents no medicine.
+-- This accounts for instances where the customer buys only products and no medicine,
+-- since some ternary relationships merge products and medicine primary keys
+-- as the ternary relation’s composite key.
+
+-- 10. SELF_CARE_HYGIENE_PRODUCT:
 INSERT INTO SELF_CARE_HYGIENE_PRODUCT VALUES ('SC1001', 'Toothpaste', 'Mint flavor', 
 'Dental', 3.00, 'OralB');
 INSERT INTO SELF_CARE_HYGIENE_PRODUCT VALUES ('SC1002', 'Shampoo', 'For dry hair', 
@@ -222,6 +252,12 @@ INSERT INTO SELF_CARE_HYGIENE_PRODUCT VALUES ('SC1010', 'Deodorant', 'Fresh scen
 'Personal Care', 3.50, 'Dove');
 INSERT INTO SELF_CARE_HYGIENE_PRODUCT VALUES('N/A', 'N/A', 'N/A', 'F', 0, 'N/A');
 
+-- We inserted a 'N/A' tuple that represents no products.
+-- This accounts for instances where the customer buys only medicines and no products,
+-- since some ternary relationships merge products and medicine primary keys
+-- as the ternary relation’s composite key.
+
+-- 11. PRESCRIPTION:
 INSERT INTO PRESCRIPTION VALUES (1, TO_DATE('01/11/2024', 'DD/MM/YYYY'), 2, 
 TO_DATE('01/02/2025', 'DD/MM/YYYY'), '+96111234567', 'Dr. Mansour', 'DL12345', 10, 'Sami', 
 'Haddad');
@@ -245,6 +281,7 @@ TO_DATE('10/02/2025', 'DD/MM/YYYY'), '+96111234575', 'Dr. Rania', 'DL56789', 40,
 INSERT INTO PRESCRIPTION VALUES (10, TO_DATE('12/12/2024', 'DD/MM/YYYY'), 2, 
 TO_DATE('12/02/2025', 'DD/MM/YYYY'), '+96111234576', 'Dr. Hassan', 'DL65432', 20, 'Ali', 'Jaber');
 
+-- 12. Contains2:
 INSERT INTO contains2 VALUES (1, 'A01AA01');
 INSERT INTO contains2 VALUES (2, 'B02BC01');
 INSERT INTO contains2 VALUES (3, 'C03CC01');
@@ -256,6 +293,7 @@ INSERT INTO contains2 VALUES (8, 'H08HH01');
 INSERT INTO contains2 VALUES (9, 'I09II01');
 INSERT INTO contains2 VALUES (10, 'J10JJ01');
 
+-- 13. Payment_method:
 INSERT INTO Payment_method VALUES (1, 'Card');
 INSERT INTO Payment_method VALUES (2, 'Cash');
 INSERT INTO Payment_method VALUES (3, 'Card');
@@ -267,6 +305,7 @@ INSERT INTO Payment_method VALUES (8, 'Cash');
 INSERT INTO Payment_method VALUES (9, 'Card');
 INSERT INTO Payment_method VALUES (10, 'Cash');
 
+-- 14. Item_ID:
 INSERT INTO Item_ID VALUES (1, 'SC1001');
 INSERT INTO Item_ID VALUES (1, 'A01AA01');
 INSERT INTO Item_ID VALUES (2, 'B02BC01');
@@ -278,6 +317,7 @@ INSERT INTO Item_ID VALUES (8, 'G07GG01');
 INSERT INTO Item_ID VALUES (9, 'H08HH01');
 INSERT INTO Item_ID VALUES (10, 'I09II01');
 
+-- 15. Dosage_Instructions:
 INSERT INTO Dosage_Instructions VALUES (1, 'Take 1 tablet daily');
 INSERT INTO Dosage_Instructions VALUES (1, 'Take 2 tablets daily');
 INSERT INTO Dosage_Instructions VALUES (3, 'Take 1 tablet every 6 hours');
@@ -289,6 +329,7 @@ INSERT INTO Dosage_Instructions VALUES (8, 'Take 1 tablet in the morning and eve
 INSERT INTO Dosage_Instructions VALUES (9, 'Take 1 tablet every 8 hours');
 INSERT INTO Dosage_Instructions VALUES (10, 'Take 1 tablet as needed');
 
+-- 16. Supplies:
 INSERT INTO Supplies VALUES ('A01AA01', '30012345678', 'SC1001', 3.50, TO_DATE('01/11/2024', 
 'DD/MM/YYYY'), 50);
 INSERT INTO Supplies VALUES ('B02BC01', '30087654321', 'SC1002', 7.00, TO_DATE('10/11/2024', 
@@ -310,6 +351,7 @@ INSERT INTO Supplies VALUES ('I09II01', '30077889900', 'SC1009', 2.50, TO_DATE('
 INSERT INTO Supplies VALUES ('J10JJ01', '30088990011', 'SC1010', 5.00, TO_DATE('20/12/2024', 
 'DD/MM/YYYY'), 160)
 
+-- 17. Includes:
 INSERT INTO Includes VALUES (1, 'A01AA01', 'SC1001');
 INSERT INTO Includes VALUES (2, 'B02BC01', 'SC1002');
 INSERT INTO Includes VALUES (3, 'C03CC01', 'SC1003');
@@ -321,6 +363,7 @@ INSERT INTO Includes VALUES (8, 'H08HH01', 'SC1008');
 INSERT INTO Includes VALUES (9, 'I09II01', 'SC1009');
 INSERT INTO Includes VALUES (10, 'J10JJ01', 'SC1010');
 
+-- 18. Stores:
 INSERT INTO Stores VALUES ('A01AA01', 'SC1001', 'I001', TO_DATE('01/10/2024', 
 'DD/MM/YYYY'), TO_DATE('01/10/2025', 'DD/MM/YYYY'));
 INSERT INTO Stores VALUES ('B02BC01', 'SC1002', 'I002', TO_DATE('10/10/2024', 
