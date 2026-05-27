@@ -1,4 +1,4 @@
--- Inserting Values:
+-- INSERTING VALUES:
 
 -- 1. BRANCH:
 INSERT INTO BRANCH VALUES ('B001', 'Hamra HD Branch', '+96119876543', 
