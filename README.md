@@ -32,7 +32,7 @@ healer-dealer-pharmacy-database/
 ├── report/
 │   └── Final-ER-Model.png
 │   └── phase-IV-report.pdf
-└── sql/
+├── sql/
 │   ├── create_tables.sql
 │   ├── insert_data.sql
 │   └── queries.sql
@@ -45,4 +45,4 @@ The full project report is available in the `report/` folder.
 
 ## Notes
 
-This project was completed as part of a team database design assignment for CSC375: Database Management Systems, at the Lebanese American University, Beirut.
+This project was completed as part of a team database design assignment for CSC375: Database Management Systems, at the Lebanese American University in Beirut.
