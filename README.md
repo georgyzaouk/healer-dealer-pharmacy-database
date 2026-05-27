@@ -29,14 +29,14 @@ The project models the operations of a pharmacy, including employees, branches, 
 
 ```text
 healer-dealer-pharmacy-database/
-├── README.md
 ├── report/
 │   └── Final-ER-Model.png
 │   └── phase-IV-report.pdf
 └── sql/
-    ├── create_tables.sql
-    ├── insert_data.sql
-    └── queries.sql
+│   ├── create_tables.sql
+│   ├── insert_data.sql
+│   └── queries.sql
+└── README.md
 ```
 
 ## Project Report
