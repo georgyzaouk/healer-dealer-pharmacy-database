@@ -1,0 +1,195 @@
+CREATE TABLE BRANCH (
+ BranchID VARCHAR(5) PRIMARY KEY,
+ Name VARCHAR(50) NOT NULL,
+ Phone VARCHAR(15),
+ Email VARCHAR(100) CHECK (Email LIKE '%@healerdealer.com'),
+ Street VARCHAR(100),
+ City VARCHAR(50),
+ Manager_name VARCHAR(50),
+ Manager_SSN VARCHAR(9)
+);
+
+CREATE TABLE EMPLOYEE (
+ SSN VARCHAR(9) NOT NULL,
+ Fname VARCHAR(15) NOT NULL,
+ Lname VARCHAR(15) NOT NULL,
+ Dob DATE,
+ Sex CHAR NOT NULL CHECK(Sex IN ('F', 'M')),
+ Position VARCHAR(15),
+ License_number VARCHAR(20) DEFAULT NULL, 
+ Salary DECIMAL(10, 2),
+ Phone_number VARCHAR(15) NOT NULL,
+ Email VARCHAR(40) CHECK (Email LIKE '%@healerdealer.com'),
+ City VARCHAR(30),
+ Street_nb INT,
+ Street_name VARCHAR(30),
+ Apartment_number INT,
+ B_ID VARCHAR(5),
+ Start_date DATE,
+ End_date DATE,
+ Hours_worked INT,
+ PRIMARY KEY (SSN),
+ FOREIGN KEY (B_ID) REFERENCES BRANCH(BranchID)
+);
+
+CREATE TABLE SUPPLIER (
+ SupplierID CHAR(11) NOT NULL PRIMARY KEY, 
+ Name VARCHAR(100) NOT NULL,
+ Contact_person VARCHAR(50),
+ Delivery_term VARCHAR(30) CHECK(Delivery_term IN ('Weekly', 'Monthly', 'Yearly')),
+ Email VARCHAR(40) NOT NULL,
+ Phone_number VARCHAR(15),
+ Street VARCHAR(30),
+ City VARCHAR(30) NOT NULL
+);
+
+CREATE TABLE BILLING_INVOICE (
+ InvoiceID INT PRIMARY KEY, 
+ ESSN VARCHAR(9) NOT NULL,
+ Date_issued DATE NOT NULL,
+ Total_amount NUMBER(10, 2) NOT NULL,
+ Payment_status VARCHAR(20) NOT NULL,
+ CF_name VARCHAR(15) NOT NULL,
+ CL_name VARCHAR(15) NOT NULL,
+ Amount_paid NUMBER(10, 2) NOT NULL,
+ FOREIGN KEY (ESSN) REFERENCES EMPLOYEE(SSN)
+);
+
+CREATE TABLE INVENTORY (
+ InventoryID CHAR(5) PRIMARY KEY,
+ Quantity INT NOT NULL CHECK (Quantity >= 0),
+ Street VARCHAR(100),
+ City VARCHAR(50),
+ B_ID VARCHAR(5) NOT NULL,
+ FOREIGN KEY (B_ID) REFERENCES BRANCH(BranchID)
+);
+
+CREATE TABLE CUSTOMER (
+ Fname VARCHAR(30),
+ Lname VARCHAR(30),
+ Bill_ID INT,
+ Phone_number VARCHAR(15),
+ Dob DATE,
+ PRIMARY KEY (Fname, Lname, Bill_ID),
+ CONSTRAINT unique_fname_lname UNIQUE (Fname, Lname),
+ FOREIGN KEY (Bill_ID) REFERENCES BILLING_INVOICE(InvoiceID)
+);
+
+CREATE TABLE MEDICINE (
+ MedicineID VARCHAR(7) PRIMARY KEY, 
+ Name VARCHAR(50) NOT NULL,
+ Description VARCHAR(100),
+ Prescription_required CHAR(1) CHECK (Prescription_required IN ('T', 'F')) NOT NULL,
+ Price DECIMAL(10, 2) NOT NULL,
+ Manufacturer VARCHAR(100)
+);
+
+CREATE TABLE SELF_CARE_HYGIENE_PRODUCT (
+ ProductID VARCHAR(20) PRIMARY KEY, 
+ Name VARCHAR(25) NOT NULL,
+ Description VARCHAR(100), 
+ Category VARCHAR(50),
+ Price DECIMAL(10, 2) NOT NULL,
+ Manufacturer VARCHAR(100)
+);
+
+CREATE TABLE PRESCRIPTION (
+ PrescriptionID INT PRIMARY KEY, 
+ Date_issued DATE NOT NULL, 
+ Refill_count INT DEFAULT 0, 
+ Expiry DATE NOT NULL, 
+ Dr_phone_nb VARCHAR(15), 
+ Dr_name VARCHAR(100), 
+ Dr_license_number VARCHAR(50), 
+ Refills_frequency INT, 
+ CF_name VARCHAR(15) NOT NULL, 
+ CL_name VARCHAR(15) NOT NULL,
+ FOREIGN KEY (CF_name, CL_name) REFERENCES CUSTOMER(Fname, Lname)
+);
+
+CREATE TABLE DEPENDENT (
+ Fname VARCHAR(30),
+ Lname VARCHAR(30),
+ ESSN VARCHAR(9) NOT NULL,
+ Sex CHAR NOT NULL CHECK (Sex IN ('F', 'M')),
+ Dob DATE,
+ Relationship VARCHAR(20) NOT NULL CHECK (Relationship IN ('Spouse','Child','Parent','other')),
+ PRIMARY KEY (Fname, Lname, ESSN),
+ FOREIGN KEY (ESSN) REFERENCES EMPLOYEE(SSN)
+);
+
+CREATE TABLE Payment_term (
+ SupplierID CHAR(11) NOT NULL,
+ Payment_term VARCHAR(30) NOT NULL,
+ PRIMARY KEY (SupplierID, Payment_term),
+ FOREIGN KEY (SupplierID) REFERENCES SUPPLIER(SupplierID)
+);
+
+CREATE TABLE contains2 (
+ pID INT NOT NULL,
+ mID VARCHAR(7),
+ PRIMARY KEY (pID, mID),
+ FOREIGN KEY (mID) REFERENCES MEDICINE(MedicineID),
+ FOREIGN KEY (pID) REFERENCES PRESCRIPTION(PrescriptionID)
+);
+
+CREATE TABLE Payment_method (
+ InvoiceID INT NOT NULL,
+ Payment_method VARCHAR(20),
+ PRIMARY KEY (InvoiceID, Payment_method),
+ FOREIGN KEY (InvoiceID) REFERENCES BILLING_INVOICE(InvoiceID)
+);
+
+CREATE TABLE Item_ID (
+ InvoiceID INT NOT NULL,
+ ItemID VARCHAR(10),
+ PRIMARY KEY (InvoiceID, ItemID),
+ FOREIGN KEY (InvoiceID) REFERENCES BILLING_INVOICE(InvoiceID)
+);
+
+CREATE TABLE Dosage_Instructions (
+ PrescriptionID INT NOT NULL,
+ Dosage_instruction VARCHAR(100),
+ PRIMARY KEY (PrescriptionID, Dosage_instruction),
+ FOREIGN KEY (PrescriptionID) REFERENCES PRESCRIPTION(PrescriptionID)
+);
+
+CREATE TABLE Supplies (
+ mID VARCHAR(7), 
+ sID CHAR(11) NOT NULL,
+ prID VARCHAR(20),
+ Price_per_unit DECIMAL(10, 2) NOT NULL, 
+ Supply_date DATE NOT NULL, 
+ Quantity_supplied INT NOT NULL,
+ PRIMARY KEY (mID, sID, prID),
+ FOREIGN KEY (mID) REFERENCES MEDICINE(MedicineID),
+ FOREIGN KEY (prID) REFERENCES SELF_CARE_HYGIENE_PRODUCT(ProductID),
+ FOREIGN KEY (sID) REFERENCES SUPPLIER(SupplierID)
+);
+
+CREATE TABLE Includes (
+ bID INT NOT NULL,
+ mID VARCHAR(7),
+ prID VARCHAR(20),
+ PRIMARY KEY (bID, mID, prID),
+ FOREIGN KEY (bID) REFERENCES BILLING_INVOICE(InvoiceID),
+ FOREIGN KEY (mID) REFERENCES MEDICINE(MedicineID),
+ FOREIGN KEY (prID) REFERENCES SELF_CARE_HYGIENE_PRODUCT(ProductID)
+);
+
+CREATE TABLE Stores (
+ mID VARCHAR(7), 
+ prID VARCHAR(20), 
+ inID CHAR(5) NOT NULL, 
+ Restock_date DATE, 
+ Expiry DATE NOT NULL, 
+ PRIMARY KEY (mID, prID, inID),
+ FOREIGN KEY (mID) REFERENCES MEDICINE(MedicineID),
+ FOREIGN KEY (prID) REFERENCES SELF_CARE_HYGIENE_PRODUCT(ProductID),
+ FOREIGN KEY (inID) REFERENCES INVENTORY(InventoryID)
+);
+
+ALTER TABLE BRANCH ADD (FOREIGN KEY (Manager_SSN) REFERENCES EMPLOYEE(SSN));
+
+ALTER TABLE BILLING_INVOICE ADD( FOREIGN KEY (CF_name, CL_name) REFERENCES 
+CUSTOMER(Fname, Lname));
