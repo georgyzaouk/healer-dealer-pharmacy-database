@@ -1,4 +1,4 @@
--- CREATE TABLES:
+-- CREATE TABLES
 -- To create our tables in the Oracle database server, we use the CREATE TABLE command
 -- and include the relation name, attributes, data types, primary keys, foreign keys, and constraints.
 
