@@ -1,3 +1,8 @@
+-- CREATE TABLES:
+-- To create our tables in the Oracle database server, we use the CREATE TABLE command
+-- and include the relation name, attributes, data types, primary keys, foreign keys, and constraints.
+
+-- 1- BRANCH:
 CREATE TABLE BRANCH (
  BranchID VARCHAR(5) PRIMARY KEY,
  Name VARCHAR(50) NOT NULL,
@@ -9,6 +14,12 @@ CREATE TABLE BRANCH (
  Manager_SSN VARCHAR(9)
 );
 
+-- Note: Manager_SSN is a foreign key referencing the primary key of EMPLOYEE.
+-- However, there is a circular dependency because EMPLOYEE also has B_ID referencing BRANCH.
+-- To avoid this issue, Manager_SSN is not declared as a foreign key during table creation.
+-- It is added later using ALTER TABLE.
+
+-- 2- EMPLOYEE:
 CREATE TABLE EMPLOYEE (
  SSN VARCHAR(9) NOT NULL,
  Fname VARCHAR(15) NOT NULL,
@@ -32,6 +43,7 @@ CREATE TABLE EMPLOYEE (
  FOREIGN KEY (B_ID) REFERENCES BRANCH(BranchID)
 );
 
+-- 3- SUPPLIER:
 CREATE TABLE SUPPLIER (
  SupplierID CHAR(11) NOT NULL PRIMARY KEY, 
  Name VARCHAR(100) NOT NULL,
@@ -43,6 +55,7 @@ CREATE TABLE SUPPLIER (
  City VARCHAR(30) NOT NULL
 );
 
+-- 4- BILLING_INVOICE:
 CREATE TABLE BILLING_INVOICE (
  InvoiceID INT PRIMARY KEY, 
  ESSN VARCHAR(9) NOT NULL,
@@ -55,6 +68,11 @@ CREATE TABLE BILLING_INVOICE (
  FOREIGN KEY (ESSN) REFERENCES EMPLOYEE(SSN)
 );
 
+-- Note: CF_name and CL_name are foreign keys that refer to CUSTOMER.
+-- However, because of the circular dependency issue, this constraint is omitted here
+-- and added later using ALTER TABLE.
+
+-- 5- INVENTORY:
 CREATE TABLE INVENTORY (
  InventoryID CHAR(5) PRIMARY KEY,
  Quantity INT NOT NULL CHECK (Quantity >= 0),
@@ -64,6 +82,7 @@ CREATE TABLE INVENTORY (
  FOREIGN KEY (B_ID) REFERENCES BRANCH(BranchID)
 );
 
+-- 6- CUSTOMER:
 CREATE TABLE CUSTOMER (
  Fname VARCHAR(30),
  Lname VARCHAR(30),
@@ -75,6 +94,7 @@ CREATE TABLE CUSTOMER (
  FOREIGN KEY (Bill_ID) REFERENCES BILLING_INVOICE(InvoiceID)
 );
 
+-- 7- MEDICINE:
 CREATE TABLE MEDICINE (
  MedicineID VARCHAR(7) PRIMARY KEY, 
  Name VARCHAR(50) NOT NULL,
@@ -84,6 +104,7 @@ CREATE TABLE MEDICINE (
  Manufacturer VARCHAR(100)
 );
 
+-- 8- SELF_CARE_HYGIENE_PRODUCT:
 CREATE TABLE SELF_CARE_HYGIENE_PRODUCT (
  ProductID VARCHAR(20) PRIMARY KEY, 
  Name VARCHAR(25) NOT NULL,
@@ -93,6 +114,7 @@ CREATE TABLE SELF_CARE_HYGIENE_PRODUCT (
  Manufacturer VARCHAR(100)
 );
 
+-- 9- PRESCRIPTION:
 CREATE TABLE PRESCRIPTION (
  PrescriptionID INT PRIMARY KEY, 
  Date_issued DATE NOT NULL, 
@@ -107,6 +129,7 @@ CREATE TABLE PRESCRIPTION (
  FOREIGN KEY (CF_name, CL_name) REFERENCES CUSTOMER(Fname, Lname)
 );
 
+-- 10- DEPENDENT:
 CREATE TABLE DEPENDENT (
  Fname VARCHAR(30),
  Lname VARCHAR(30),
@@ -118,6 +141,7 @@ CREATE TABLE DEPENDENT (
  FOREIGN KEY (ESSN) REFERENCES EMPLOYEE(SSN)
 );
 
+-- 11- Payment_term:
 CREATE TABLE Payment_term (
  SupplierID CHAR(11) NOT NULL,
  Payment_term VARCHAR(30) NOT NULL,
@@ -125,6 +149,7 @@ CREATE TABLE Payment_term (
  FOREIGN KEY (SupplierID) REFERENCES SUPPLIER(SupplierID)
 );
 
+-- 12- contains2:
 CREATE TABLE contains2 (
  pID INT NOT NULL,
  mID VARCHAR(7),
@@ -133,6 +158,7 @@ CREATE TABLE contains2 (
  FOREIGN KEY (pID) REFERENCES PRESCRIPTION(PrescriptionID)
 );
 
+-- 13- Payment_method:
 CREATE TABLE Payment_method (
  InvoiceID INT NOT NULL,
  Payment_method VARCHAR(20),
@@ -140,6 +166,7 @@ CREATE TABLE Payment_method (
  FOREIGN KEY (InvoiceID) REFERENCES BILLING_INVOICE(InvoiceID)
 );
 
+-- 14- Item_ID:
 CREATE TABLE Item_ID (
  InvoiceID INT NOT NULL,
  ItemID VARCHAR(10),
@@ -147,6 +174,7 @@ CREATE TABLE Item_ID (
  FOREIGN KEY (InvoiceID) REFERENCES BILLING_INVOICE(InvoiceID)
 );
 
+-- 15- Dosage_Instructions:
 CREATE TABLE Dosage_Instructions (
  PrescriptionID INT NOT NULL,
  Dosage_instruction VARCHAR(100),
@@ -154,6 +182,7 @@ CREATE TABLE Dosage_Instructions (
  FOREIGN KEY (PrescriptionID) REFERENCES PRESCRIPTION(PrescriptionID)
 );
 
+-- 16- Supplies:
 CREATE TABLE Supplies (
  mID VARCHAR(7), 
  sID CHAR(11) NOT NULL,
@@ -167,6 +196,7 @@ CREATE TABLE Supplies (
  FOREIGN KEY (sID) REFERENCES SUPPLIER(SupplierID)
 );
 
+-- 17- Includes:
 CREATE TABLE Includes (
  bID INT NOT NULL,
  mID VARCHAR(7),
@@ -177,6 +207,7 @@ CREATE TABLE Includes (
  FOREIGN KEY (prID) REFERENCES SELF_CARE_HYGIENE_PRODUCT(ProductID)
 );
 
+-- 18- Stores:
 CREATE TABLE Stores (
  mID VARCHAR(7), 
  prID VARCHAR(20), 
@@ -188,6 +219,12 @@ CREATE TABLE Stores (
  FOREIGN KEY (prID) REFERENCES SELF_CARE_HYGIENE_PRODUCT(ProductID),
  FOREIGN KEY (inID) REFERENCES INVENTORY(InventoryID)
 );
+
+-- ALTER command:
+-- Some referential integrity constraints cannot be added directly during table creation
+-- because the primary key they reference may not have been created yet.
+-- Due to circular dependencies, this cannot be solved only by reordering table creation.
+-- Therefore, ALTER TABLE is used after all required tables are created.
 
 ALTER TABLE BRANCH ADD (FOREIGN KEY (Manager_SSN) REFERENCES EMPLOYEE(SSN));
 
